@@ -34,9 +34,13 @@ term_handler() {
 
 trap 'term_handler' SIGTERM
 
+# Start virtual display as root so /tmp/.X11-unix can be created
+LogAction "Starting virtual display"
+Xvfb :0 -screen 0 1024x768x16 &
+export DISPLAY=:0
+
 # Start the server as steam user
-su - steam -c "cd /home/steam/server && \
-    ./start.sh" &
+su - steam -c "export DISPLAY=:0; cd /home/steam/server && ./start.sh" &
 
 killpid="$!"
 wait "$killpid"

@@ -19,16 +19,6 @@ export WINEPREFIX="${HOME}/.wine"
 export WINEARCH=win64
 export WINEDEBUG=-all
 
-# Wine requires a virtual display
-Xvfb :0 -screen 0 1024x768x16 &
-export DISPLAY=:0
-
-# Initialize Wine prefix on first run
-if [ ! -d "${WINEPREFIX}/drive_c" ]; then
-    LogInfo "Initializing Wine prefix (first run, this may take a moment)..."
-    wineboot --init 2>/dev/null
-fi
-
 LogInfo "Server is starting..."
 
 exec wine "$EXEC" -log
