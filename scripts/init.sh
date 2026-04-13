@@ -28,7 +28,7 @@ chown -R steam:steam /home/steam/server-files
 term_handler() {
     if ! shutdown_server; then
         local pid
-        pid=$(pgrep -x "wine-preloader|wine64-preloader" | head -1)
+        pid=$(pgrep -f "wine.*preloader" | head -1)
         if [ -n "$pid" ]; then
             kill -SIGTERM "$pid"
         fi
