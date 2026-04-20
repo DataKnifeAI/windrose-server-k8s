@@ -64,7 +64,7 @@ docker run -d \
 | `PGID` | `1000` | Group ID to run the server process as |
 | `UPDATE_ON_START` | `true` | Download and validate server files on every startup. Set to `false` to skip. |
 | `USE_DIRECT_CONNECTION` | `false` | Set to `true` to connect to your server via IP and port instead of invite code. |
-| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Port for direct connection. |
+| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Port for direct connection. Requires both TCP and UDP. |
 | `DIRECT_CONNECTION_PROXY_ADDRESS` | `0.0.0.0` | Only applies if `USE_DIRECT_CONNECTION=true`. Address for the direct connection proxy. |
 | `USER_SELECTED_REGION` | | Region for the connection service. Leave empty to auto-select. Options: `SEA`, `CIS`, `EU` |
 | `INVITE_CODE` | | Invite code players use to connect if `USE_DIRECT_CONNECTION=false` (default). Min 6 characters, `0-9 a-z A-Z`, case sensitive |
