@@ -29,8 +29,8 @@ RUN dpkg --add-architecture i386 && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# hadolint ignore=DL3008
 # Install PowerShell 7 (pwsh) — used by WindrosePlus scripts natively on Linux
+# hadolint ignore=DL3008
 RUN curl -fsSL https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
         -o /tmp/packages-microsoft-prod.deb && \
     dpkg -i /tmp/packages-microsoft-prod.deb && \
