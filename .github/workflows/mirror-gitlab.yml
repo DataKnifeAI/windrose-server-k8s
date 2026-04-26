@@ -26,7 +26,7 @@ jobs:
       - name: Shellcheck
         uses: ludeeus/action-shellcheck@2.0.0
         env:
-          SHELLCHECK_OPTS: -e SC1017
+          SHELLCHECK_OPTS: -x -e SC1017
 
       - uses: hadolint/hadolint-action@v3.1.0
         with:

@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck source=functions.sh
+# shellcheck source=scripts/functions.sh
 source "/home/steam/server/functions.sh"
 
 SERVER_FILES="/home/steam/server-files"
