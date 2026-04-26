@@ -1,7 +1,6 @@
 ---
-# After lint passes on main, mirror to GitLab for CI and container registry.
-# Create: https://gitlab.com/dk-raas/dkai/game-servers/windrose-server-k8s
-# Secret: GITLAB_TOKEN (write_repository + read_registry + write_registry).
+# Mirror to GitLab after lint; GitLab CI publishes images to internal Harbor (not gitlab.com registry).
+# Configure HARBOR_* variables on the GitLab project. GitHub: GITLAB_TOKEN for push only.
 name: Mirror to GitLab
 
 on:
