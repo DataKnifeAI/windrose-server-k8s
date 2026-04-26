@@ -1,0 +1,36 @@
+stages:
+  - build
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+.docker-login: &docker-login
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+build-image:
+  stage: build
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  <<: *docker-login
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  script:
+    - docker buildx create --use || true
+    - docker buildx build --platform linux/amd64 --push -t "$CI_REGISTRY_IMAGE:latest" -t "$IMAGE_TAG" -f Dockerfile .
+
+build-image-wine-staging:
+  stage: build
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  <<: *docker-login
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: true
+  script:
+    - docker buildx create --use || true
+    - docker buildx build --platform linux/amd64 --push -t "$CI_REGISTRY_IMAGE:wine-staging" -f Dockerfile.staging .

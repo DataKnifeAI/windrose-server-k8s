@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windrose-server
+  labels:
+    app.kubernetes.io/name: windrose-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: windrose-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: windrose-server
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      securityContext:
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: windrose
+          image: game-server
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: game-tcp
+              containerPort: 7777
+              protocol: TCP
+            - name: game-udp
+              containerPort: 7777
+              protocol: UDP
+            - name: dashboard
+              containerPort: 8780
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: windrose-server-env
+                optional: true
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          volumeMounts:
+            - name: server-files
+              mountPath: /home/steam/server-files
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+            limits:
+              cpu: "8"
+              memory: 20Gi
+      volumes:
+        - name: server-files
+          persistentVolumeClaim:
+            claimName: windrose-server-files
