@@ -37,6 +37,7 @@ jobs:
       - name: Lint - Markdown
         uses: DavidAnson/markdownlint-cli2-action@v17
         with:
+          config: ".markdownlint.jsonc"
           globs: "**/*.md"
 
   push-to-gitlab:
