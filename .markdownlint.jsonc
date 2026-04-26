@@ -1,0 +1,7 @@
+// Upstream README uses long badge lines, tables, and JSON blocks; relax line length.
+{
+  "default": true,
+  "MD013": false,
+  "MD036": false,
+  "MD041": false
+}

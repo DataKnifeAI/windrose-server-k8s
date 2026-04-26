@@ -1,8 +1,12 @@
 # BUILD THE SERVER IMAGE
+# hadolint ignore=DL3029
 FROM --platform=linux/amd64 debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# hadolint ignore=DL3008,DL3015
 RUN dpkg --add-architecture i386 && \
     apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -26,6 +30,7 @@ RUN dpkg --add-architecture i386 && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PowerShell 7 (pwsh) — used by WindrosePlus scripts natively on Linux
+# hadolint ignore=DL3008
 RUN curl -fsSL https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
         -o /tmp/packages-microsoft-prod.deb && \
     dpkg -i /tmp/packages-microsoft-prod.deb && \
@@ -36,6 +41,7 @@ RUN curl -fsSL https://packages.microsoft.com/config/debian/12/packages-microsof
     rm -rf /var/lib/apt/lists/*
 
 # Install Linux-native repak and retoc (replace WindrosePlus bundled .exe tools)
+# hadolint ignore=DL3008
 ARG REPAK_VERSION=v0.2.3
 ARG RETOC_VERSION=v0.1.5
 RUN set -eux; \
@@ -78,6 +84,7 @@ ENV WINEPREFIX=/home/steam/.wine \
     WINEARCH=win64 \
     WINEDLLOVERRIDES="mscoree,mshtml=;dwmapi=n,b" \
     DISPLAY=:0
+# hadolint ignore=DL3001
 RUN Xvfb :0 -screen 0 1024x768x16 & \
     sleep 2 && \
     su -l steam -c "WINEPREFIX=/home/steam/.wine WINEARCH=win64 WINEDLLOVERRIDES='mscoree,mshtml=' winecfg -v win10 >/dev/null 2>&1; wineboot --init >/dev/null 2>&1" && \
