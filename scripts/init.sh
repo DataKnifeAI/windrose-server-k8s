@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck source=scripts/functions.sh
+# shellcheck source=functions.sh
 source "/home/steam/server/functions.sh"
 
 LogAction "Set file permissions"
