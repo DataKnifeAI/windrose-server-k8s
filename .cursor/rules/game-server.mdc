@@ -1,0 +1,32 @@
+---
+description: DataKnife Windrose dedicated server (Wine) container and Kubernetes deploy
+globs:
+  - "**/*"
+---
+
+# Windrose server (this repo)
+
+Fork-style image from [indifferentbroccoli/windrose-server-docker](https://github.com/indifferentbroccoli/windrose-server-docker). Wine-based Windows server binary; **amd64** only. Align behavior with upstream unless intentionally changing DataKnife deployment.
+
+## Official game server documentation
+
+- [Dedicated Server Guide (Windrose)](https://playwindrose.com/dedicated-server-guide) — `ServerDescription.json` / `WorldDescription.json`, invite codes, ports, SteamCMD app id **4129620**, LAN + Docker / ICE caveats, Proxmox CPU `host`, experimental Linux+Wine notes.
+- [Indifferent Broccolipedia](https://wiki.indifferentbroccoli.com) — general hosting patterns; [Windrose section](https://wiki.indifferentbroccoli.com/Windrose) for broccoli-specific guides.
+
+When changing env vars or JSON-driven behavior, cross-check field names and semantics with the official guide (paths inside the container differ from a bare Windows install).
+
+## Layout
+
+- `scripts/` — `init.sh`, `start.sh`, Windrose+ / UE4SS helpers; `# shellcheck source=scripts/functions.sh` (paths resolve from repo root in CI).
+- `Dockerfile` / `Dockerfile.staging` — Debian + Wine stable vs staging; CI runs Hadolint on **both**.
+- `deploy/` — Kustomize; default image points at Harbor; optional dashboard port **8780**.
+- `.github/actions/verify-game-server/` — same verify pipeline as Satisfactory sibling repo.
+
+## Kubernetes
+
+- Single PVC for `server-files`; optional Windrose+ dashboard exposure on 8780.
+- For ICE/P2P edge cases on LAN + Kubernetes networking, see the Docker NAT section in the official dedicated server guide.
+
+## GitLab mirror
+
+See `docs/GITLAB_MIRROR.md`.

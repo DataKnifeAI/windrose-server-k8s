@@ -1,0 +1,30 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify (shell, Docker, Markdown, YAML, Kustomize)
+        uses: ./.github/actions/verify-game-server
+        with:
+          hadolint_failure_threshold: error
+          hadolint_dockerfile: Dockerfile
+          hadolint_dockerfile_secondary: Dockerfile.staging
+          kustomize_path: deploy
