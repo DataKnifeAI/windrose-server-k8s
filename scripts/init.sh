@@ -12,7 +12,10 @@ else
     groupmod -o -g "${PGID}" steam
 fi
 
-chown -R steam:steam /home/steam/
+# Avoid recursive chown on /home/steam: server-files is often an NFS PVC where chown fails (root_squash)
+# and root-owned game files prevent the steam user from writing ServerDescription.json.
+chown_steam_best_effort /home/steam/server
+chown_steam_best_effort /home/steam/.wine
 
 cat /branding
 
@@ -36,7 +39,7 @@ else
     LogInfo "Windrose+ disabled (set WINDROSE_PLUS_ENABLED=true to enable)"
 fi
 
-chown -R steam:steam /home/steam/server-files
+chown_steam_best_effort /home/steam/server-files
 
 # shellcheck disable=SC2317
 term_handler() {
@@ -70,7 +73,7 @@ export WINDROSE_PLUS_DASHBOARD_PORT="${WINDROSE_PLUS_DASHBOARD_PORT:-8780}"
 export WINDROSE_PLUS_RCON_PASSWORD="${WINDROSE_PLUS_RCON_PASSWORD:-}"
 
 # Start the server as steam user
-su - steam -w "INVITE_CODE,USE_DIRECT_CONNECTION,SERVER_PORT,DIRECT_CONNECTION_PROXY_ADDRESS,USER_SELECTED_REGION,SERVER_NAME,SERVER_PASSWORD,MAX_PLAYERS,P2P_PROXY_ADDRESS,GENERATE_SETTINGS,UE4SS_ENABLED,WINDROSE_PLUS_ENABLED,WINDROSE_PLUS_VERSION,WINDROSE_PLUS_VERSION_DEFAULT,WINDROSE_PLUS_DASHBOARD_PORT,WINDROSE_PLUS_RCON_PASSWORD" \
+su - steam -w "INVITE_CODE,USE_DIRECT_CONNECTION,SERVER_PORT,DIRECT_CONNECTION_PROXY_ADDRESS,USER_SELECTED_REGION,SERVER_NAME,SERVER_PASSWORD,MAX_PLAYERS,P2P_PROXY_ADDRESS,GENERATE_SETTINGS,UE4SS_ENABLED,WINDROSE_PLUS_ENABLED,WINDROSE_PLUS_VERSION,WINDROSE_PLUS_VERSION_DEFAULT,WINDROSE_PLUS_DASHBOARD_PORT,WINDROSE_PLUS_RCON_PASSWORD,FIRST_BOOT_CONFIG_WAIT_SEC,FIRST_BOOT_WINE_LOG" \
     -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"
