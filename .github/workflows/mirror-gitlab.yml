@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   mirror:
-    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-mirror.yml@v1
+    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-mirror.yml@main
     secrets: inherit
     with:
       gitlab_mirror_path: dk-raas/dkai/game-servers/windrose-server-k8s
