@@ -24,24 +24,31 @@ export WINEARCH="${WINEARCH:-win64}"
 export WINEDEBUG="${WINEDEBUG:-fixme-all}"
 export WINEDLLOVERRIDES="mscoree,mshtml=;dwmapi=n,b"
 
+# First run can be slow on NFS or cold cache; override with FIRST_BOOT_CONFIG_WAIT_SEC.
+FIRST_BOOT_CONFIG_WAIT_SEC="${FIRST_BOOT_CONFIG_WAIT_SEC:-600}"
+FIRST_BOOT_WINE_LOG="${FIRST_BOOT_WINE_LOG:-/tmp/windrose-first-boot-wine.log}"
+
 # First run: start server briefly to generate ServerDescription.json
 if [ "${GENERATE_SETTINGS:-true}" = "false" ]; then
     LogInfo "GENERATE_SETTINGS=false — skipping first boot detection and config patch"
 elif [ ! -f "$SERVER_DESC" ]; then
     LogAction "First boot detected - ServerDescription.json not found"
-    LogInfo "Starting server temporarily to generate default config files..."
+    LogInfo "Starting server temporarily to generate default config files (wait up to ${FIRST_BOOT_CONFIG_WAIT_SEC}s)..."
 
-    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT >/dev/null 2>&1 &
+    : >"$FIRST_BOOT_WINE_LOG"
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT >>"$FIRST_BOOT_WINE_LOG" 2>&1 &
     firstrun_pid=$!
 
     count=0
-    while [ ! -f "$SERVER_DESC" ] && [ $count -lt 120 ]; do
+    while [ ! -f "$SERVER_DESC" ] && [ "$count" -lt "$FIRST_BOOT_CONFIG_WAIT_SEC" ]; do
         sleep 1
         count=$((count + 1))
     done
 
     if [ ! -f "$SERVER_DESC" ]; then
         LogError "ServerDescription.json was not generated after ${count}s - server may have failed to start"
+        LogError "Wine first-boot log (${FIRST_BOOT_WINE_LOG}) last 80 lines:"
+        tail -n 80 "$FIRST_BOOT_WINE_LOG" 2>/dev/null || LogWarn "(no log file)"
         LogError "Killing temporary process and exiting"
         kill "$firstrun_pid" 2>/dev/null
         wait "$firstrun_pid" 2>/dev/null

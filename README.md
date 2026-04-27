@@ -73,6 +73,11 @@ docker run -d \
 | `MAX_PLAYERS` | `10` | Maximum number of simultaneous players |
 | `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
 | `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
+| `FIRST_BOOT_CONFIG_WAIT_SEC` | `600` | Seconds to wait for `R5/ServerDescription.json` on first boot (Wine + large download + NFS can exceed the old 120s default). |
+
+## Kubernetes / NFS volumes
+
+DepotDownloader runs as the **`steam`** user so game files on the PVC are not **root-owned** (root-owned trees on NFS often cannot be `chown`’d, which blocked Wine from writing `ServerDescription.json`). Recursive `chown` on the data volume is best-effort only; if your storage maps all files to one UID, align **`PUID`/`PGID`** with that UID/GID.
 
 ## UE4SS (optional)
 

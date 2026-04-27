@@ -39,14 +39,29 @@ Log() {
   printf "$color%s$RESET$LINE" "$prefix$message$suffix"
 }
 
+# chown as root often fails on NFS (root_squash) or read-only roots; do not abort init.
+chown_steam_best_effort() {
+  local path="$1"
+  [ -e "$path" ] || return 0
+  if chown -R steam:steam "$path" 2>/dev/null; then
+    return 0
+  fi
+  LogWarn "Could not chown $path as steam:steam (common on NFS). Ensure the volume is writable by UID/GID from PUID/PGID."
+}
+
 install() {
   LogAction "Starting server install"
   LogInfo "Installing Windrose Dedicated Server"
 
-  /depotdownloader/DepotDownloader \
-    -app 4129620 \
-    -dir /home/steam/server-files \
-    -validate
+  # Run as steam so new files on the volume are not root-owned (root-owned + NFS breaks Wine writes).
+  if command -v runuser >/dev/null 2>&1; then
+    runuser -u steam -- env HOME=/home/steam USER=steam LOGNAME=steam /depotdownloader/DepotDownloader \
+      -app 4129620 \
+      -dir /home/steam/server-files \
+      -validate
+  else
+    su - steam -s /bin/bash -c "HOME=/home/steam /depotdownloader/DepotDownloader -app 4129620 -dir /home/steam/server-files -validate"
+  fi
 
   LogSuccess "Server install complete"
 }
