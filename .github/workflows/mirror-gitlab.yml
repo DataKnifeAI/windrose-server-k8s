@@ -12,48 +12,16 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  GITLAB_MIRROR_PATH: dk-raas/dkai/game-servers/windrose-server-k8s
-
 permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint (gate for mirror)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Verify (shell, Docker, Markdown, YAML, Kustomize)
-        uses: ./.github/actions/verify-game-server
-        with:
-          hadolint_failure_threshold: error
-          hadolint_dockerfile: Dockerfile
-          hadolint_dockerfile_secondary: Dockerfile.staging
-          kustomize_path: deploy
-
-  push-to-gitlab:
-    name: Push to GitLab
-    runs-on: ubuntu-latest
-    needs:
-      - lint
-    if: always() && needs.lint.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Push to GitLab
-        env:
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git remote remove gitlab 2>/dev/null || true
-          git remote add gitlab "https://gitlab.com/${{ env.GITLAB_MIRROR_PATH }}.git"
-          git config credential.helper '!f() { echo "username=oauth2"; echo "password=${GITLAB_TOKEN}"; }; f'
-          git fetch gitlab main 2>/dev/null || true
-          git push gitlab HEAD:main --force
+  mirror:
+    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-mirror.yml@v1
+    secrets: inherit
+    with:
+      gitlab_mirror_path: dk-raas/dkai/game-servers/windrose-server-k8s
+      hadolint_failure_threshold: error
+      hadolint_dockerfile: Dockerfile
+      hadolint_dockerfile_secondary: Dockerfile.staging
+      kustomize_path: deploy

@@ -1,0 +1,26 @@
+---
+name: Security
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  container-scanning:
+    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-security.yml@v1
+    secrets: inherit
+    with:
+      dockerfile: Dockerfile
+
+  container-scanning-staging:
+    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-security.yml@v1
+    secrets: inherit
+    with:
+      dockerfile: Dockerfile.staging
