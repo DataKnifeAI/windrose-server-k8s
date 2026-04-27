@@ -1,0 +1,88 @@
+name: Verify game server
+description: >
+  Shared checks for shell scripts, Dockerfiles (Hadolint), Markdown, YAML
+  (yamllint), and optional Kustomize render.
+
+inputs:
+  markdownlint_config:
+    description: Path to markdownlint-cli2 config
+    required: false
+    default: .markdownlint.jsonc
+  yamllint_config:
+    description: Path to yamllint config
+    required: false
+    default: .yamllint.yml
+  hadolint_failure_threshold:
+    description: Hadolint minimum severity to fail (error, warning, info, style)
+    required: false
+    default: error
+  hadolint_dockerfile:
+    description: Primary Dockerfile path
+    required: false
+    default: Dockerfile
+  hadolint_dockerfile_secondary:
+    description: Optional second Dockerfile (e.g. Dockerfile.staging); leave empty to skip
+    required: false
+    default: Dockerfile.staging
+  kustomize_path:
+    description: Directory with kustomization.yaml to validate with kubectl kustomize; empty skips
+    required: false
+    default: deploy
+
+runs:
+  using: composite
+  steps:
+    - name: Shellcheck
+      shell: bash
+      run: |
+        set -euo pipefail
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq shellcheck
+        mapfile -t files < <(git ls-files 'scripts/*.sh')
+        if [[ ${#files[@]} -eq 0 ]]; then
+          echo "No shell scripts under scripts/"
+          exit 0
+        fi
+        shellcheck -x -e SC1017 "${files[@]}"
+
+    - name: Hadolint (primary Dockerfile)
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: ${{ inputs.hadolint_dockerfile }}
+        failure-threshold: ${{ inputs.hadolint_failure_threshold }}
+
+    - name: Hadolint (secondary Dockerfile)
+      if: inputs.hadolint_dockerfile_secondary != ''
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: ${{ inputs.hadolint_dockerfile_secondary }}
+        failure-threshold: ${{ inputs.hadolint_failure_threshold }}
+
+    - name: Markdownlint
+      uses: DavidAnson/markdownlint-cli2-action@v17
+      with:
+        config: ${{ inputs.markdownlint_config }}
+        globs: "**/*.md"
+
+    - name: Yamllint
+      uses: ibiqlik/action-yamllint@v3
+      with:
+        config_file: ${{ inputs.yamllint_config }}
+
+    - name: Kustomize build (dry compile)
+      if: inputs.kustomize_path != ''
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ ! -f "${{ inputs.kustomize_path }}/kustomization.yaml" ]]; then
+          echo "No kustomization at ${{ inputs.kustomize_path }}, skipping"
+          exit 0
+        fi
+        ver=$(curl -fsSL https://dl.k8s.io/release/stable.txt)
+        curl -fsSL "https://dl.k8s.io/release/${ver}/bin/linux/amd64/kubectl" -o /tmp/kubectl
+        chmod +x /tmp/kubectl
+        sudo mv /tmp/kubectl /usr/local/bin/kubectl
+        kubectl version --client=true --output=yaml
+        kubectl kustomize "${{ inputs.kustomize_path }}" >/tmp/kustomize-out.yaml
+        test -s /tmp/kustomize-out.yaml
+        echo "Kustomize render OK ($(wc -l </tmp/kustomize-out.yaml) lines)"

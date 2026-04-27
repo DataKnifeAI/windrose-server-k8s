@@ -1,5 +1,5 @@
 ---
-# Mirror to GitLab after lint; GitLab CI publishes images to internal Harbor (not gitlab.com registry).
+# Mirror to GitLab after verify; GitLab CI publishes images to internal Harbor.
 # Configure HARBOR_* variables on the GitLab project. GitHub: GITLAB_TOKEN for push only.
 name: Mirror to GitLab
 
@@ -15,6 +15,9 @@ on:
 env:
   GITLAB_MIRROR_PATH: dk-raas/dkai/game-servers/windrose-server-k8s
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint (gate for mirror)
@@ -23,22 +26,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Shellcheck
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq shellcheck
-          mapfile -t files < <(git ls-files 'scripts/*.sh')
-          shellcheck -x -e SC1017 "${files[@]}"
-
-      - uses: hadolint/hadolint-action@v3.1.0
+      - name: Verify (shell, Docker, Markdown, YAML, Kustomize)
+        uses: ./.github/actions/verify-game-server
         with:
-          dockerfile: Dockerfile
-
-      - name: Lint - Markdown
-        uses: DavidAnson/markdownlint-cli2-action@v17
-        with:
-          config: ".markdownlint.jsonc"
-          globs: "**/*.md"
+          hadolint_failure_threshold: error
+          hadolint_dockerfile: Dockerfile
+          hadolint_dockerfile_secondary: Dockerfile.staging
+          kustomize_path: deploy
 
   push-to-gitlab:
     name: Push to GitLab
