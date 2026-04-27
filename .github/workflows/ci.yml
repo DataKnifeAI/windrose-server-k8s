@@ -1,5 +1,5 @@
 ---
-name: Mirror to GitLab
+name: CI
 
 on:
   push:
@@ -14,11 +14,10 @@ permissions:
   contents: read
 
 jobs:
-  mirror:
-    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-mirror.yml@v1
+  verify:
+    uses: DataKnifeAI/github-workflows/.github/workflows/reusable-game-server-ci.yml@v1
     secrets: inherit
     with:
-      gitlab_mirror_path: dk-raas/dkai/game-servers/windrose-server-k8s
       hadolint_failure_threshold: error
       hadolint_dockerfile: Dockerfile
       hadolint_dockerfile_secondary: Dockerfile.staging
