@@ -1,4 +1,5 @@
 ---
+# Delegates to org-wide reusable workflow (DataKnifeAI/github-workflows).
 name: CI
 
 on:

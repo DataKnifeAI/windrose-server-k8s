@@ -1,4 +1,6 @@
 ---
+# Mirror to GitLab after verify; GitLab CI publishes images to internal Harbor.
+# Configure HARBOR_* variables on the GitLab project. GitHub: GITLAB_TOKEN for push only.
 name: Mirror to GitLab
 
 on:
