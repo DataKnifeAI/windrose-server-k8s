@@ -2,8 +2,7 @@
 name: Security
 
 on:
-  pull_request: null
-  workflow_dispatch: null
+  workflow_dispatch:
   schedule:
     - cron: 0 0 * * *
   push:
