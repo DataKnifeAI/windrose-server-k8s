@@ -54,16 +54,24 @@ install() {
   LogInfo "Installing Windrose Dedicated Server"
 
   # Run as steam so new files on the volume are not root-owned (root-owned + NFS breaks Wine writes).
+  local dd_rc=0
   if command -v runuser >/dev/null 2>&1; then
     runuser -u steam -- env HOME=/home/steam USER=steam LOGNAME=steam /depotdownloader/DepotDownloader \
       -app 4129620 \
       -dir /home/steam/server-files \
       -validate
+    dd_rc=$?
   else
     su - steam -s /bin/bash -c "HOME=/home/steam /depotdownloader/DepotDownloader -app 4129620 -dir /home/steam/server-files -validate"
+    dd_rc=$?
   fi
 
+  if [ "$dd_rc" -ne 0 ]; then
+    LogError "DepotDownloader exited with status $dd_rc — server files may be incomplete"
+    return "$dd_rc"
+  fi
   LogSuccess "Server install complete"
+  return 0
 }
 
 # Attempt to shutdown the server gracefully
