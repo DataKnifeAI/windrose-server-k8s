@@ -1,11 +1,14 @@
+# Reference: ClusterIP backend for Envoy Gateway (same pods as primary windrose-server Service).
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: windrose-server
+  name: windrose-server-envoy
+  namespace: game-servers
   labels:
     app.kubernetes.io/name: windrose-server
+    app.kubernetes.io/component: envoy-backend
 spec:
-  # ClusterIP: expose via Envoy Gateway + kube-vip; avoid duplicate pending LoadBalancers.
   type: ClusterIP
   selector:
     app.kubernetes.io/name: windrose-server
