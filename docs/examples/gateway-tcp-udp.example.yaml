@@ -1,0 +1,77 @@
+# Reference: Envoy Gateway L4 for Windrose (7777 TCP+UDP, 8780 dashboard).
+# Use a VIP distinct from other games that also listen on TCP 7777 (e.g. Satisfactory).
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: windrose-gateway
+  namespace: game-servers
+spec:
+  gatewayClassName: envoy
+  addresses:
+    - type: IPAddress
+      value: EXTERNAL_VIP
+  listeners:
+    - name: game-tcp
+      protocol: TCP
+      port: 7777
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: game-udp
+      protocol: UDP
+      port: 7777
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: dashboard
+      protocol: TCP
+      port: 8780
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: windrose-game-tcp
+  namespace: game-servers
+spec:
+  parentRefs:
+    - name: windrose-gateway
+      namespace: game-servers
+      sectionName: game-tcp
+  rules:
+    - backendRefs:
+        - name: windrose-server-envoy
+          port: 7777
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: windrose-game-udp
+  namespace: game-servers
+spec:
+  parentRefs:
+    - name: windrose-gateway
+      namespace: game-servers
+      sectionName: game-udp
+  rules:
+    - backendRefs:
+        - name: windrose-server-envoy
+          port: 7777
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: windrose-dashboard
+  namespace: game-servers
+spec:
+  parentRefs:
+    - name: windrose-gateway
+      namespace: game-servers
+      sectionName: dashboard
+  rules:
+    - backendRefs:
+        - name: windrose-server-envoy
+          port: 8780

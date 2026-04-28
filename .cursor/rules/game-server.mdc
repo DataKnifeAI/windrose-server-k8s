@@ -26,6 +26,7 @@ When changing env vars or JSON-driven behavior, cross-check field names and sema
 
 - Single PVC for `server-files`; optional Windrose+ dashboard exposure on 8780.
 - For ICE/P2P edge cases on LAN + Kubernetes networking, see the Docker NAT section in the official dedicated server guide.
+- **`docs/KUBERNETES.md`** — cluster notes (NFS / DepotDownloader, **ClusterIP**, Envoy + kube-vip, players). **`docs/examples/`** — reference L4 Gateway YAML; live Fleet bundle in **`DataKnifeAI/gitops-tools`** `game-servers-exposure`.
 
 ## GitLab mirror
 
