@@ -25,7 +25,7 @@ spec:
       containers:
         - name: windrose
           image: game-server
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: game-tcp
               containerPort: 7777

@@ -77,7 +77,16 @@ docker run -d \
 
 ## Kubernetes / NFS volumes
 
-DepotDownloader runs as the **`steam`** user so game files on the PVC are not **root-owned** (root-owned trees on NFS often cannot be `chown`’d, which blocked Wine from writing `ServerDescription.json`). Recursive `chown` on the data volume is best-effort only; if your storage maps all files to one UID, align **`PUID`/`PGID`** with that UID/GID.
+DepotDownloader runs as the **`steam`** user so new downloads on the PVC are not **root-owned**. On **NFS** (for example TrueNAS with `root_squash`), the superuser in the container **cannot change ownership** of files the server created earlier as root, or files owned by the NFS “nobody” mapping. `init.sh` therefore uses **`chown_steam_best_effort`**: it tries `chown -R steam:steam` on `server-files` but **ignores failure** and logs a short warning instead of aborting.
+
+### Why you might still see `chown: Operation not permitted`
+
+1. **Older image** (before `chown_steam_best_effort` / DepotDownloader-as-steam): noisy recursive `chown` on every start. **Upgrade** to the current image tag from Harbor.
+2. **Existing PVC data** from that older layout: paths may still be root-owned; new installs after upgrade write as `steam`, but old directories can keep failing `chown` until you **fix ownership once** (from a debug pod as root on a volume that allows it) or **wipe and re-download** the game tree on the PVC.
+3. **Export maps all clients to one UID**: no `chown` will ever “stick”; set **`PUID`/`PGID`** to that UID/GID so `steam` matches what the filer assigns.
+4. **Harmless noise**: if warnings appear once and the server reaches **Starting server install** / running Wine, the install path is fine; focus on failures like missing `ServerDescription.json`.
+
+The Kubernetes example in `deploy/deployment.yaml` uses **`imagePullPolicy: Always`** so a pinned tag still pulls the **latest digest** Harbor has for that tag after CI pushes.
 
 ## UE4SS (optional)
 
