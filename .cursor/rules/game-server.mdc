@@ -19,7 +19,7 @@ When changing env vars or JSON-driven behavior, cross-check field names and sema
 
 - `scripts/` — `init.sh`, `start.sh`, Windrose+ / UE4SS helpers; `# shellcheck source=scripts/functions.sh` (paths resolve from repo root in CI).
 - `Dockerfile` / `Dockerfile.staging` — Debian + Wine stable vs staging; CI runs Hadolint on **both**.
-- `deploy/` — Kustomize; default image points at Harbor; optional dashboard port **8780**.
+- `deploy/` — Kustomize (`deploy/base/`, root `deploy/kustomization.yaml`). Trial: `kubectl apply -k deploy/overlays/min-spec/` (namespace `game-servers`, needs Harbor pull secret). Default: `kubectl apply -k deploy/`. Dashboard port **8780**.
 - `.github/actions/verify-game-server/` — same verify pipeline as Satisfactory sibling repo.
 
 ## Kubernetes
