@@ -7,4 +7,5 @@ resources:
 images:
   - name: game-server
     newName: harbor.dataknife.net/library/windrose-server-k8s
-    newTag: latest
+    # Immutable GitLab CI short SHA in Harbor (bump after each release build).
+    newTag: 4c7ab40b
