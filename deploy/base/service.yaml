@@ -5,7 +5,8 @@ metadata:
   labels:
     app.kubernetes.io/name: windrose-server
 spec:
-  type: LoadBalancer
+  # ClusterIP: expose via Envoy Gateway + kube-vip; avoid duplicate pending LoadBalancers.
+  type: ClusterIP
   selector:
     app.kubernetes.io/name: windrose-server
   ports:
