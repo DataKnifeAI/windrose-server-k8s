@@ -1,0 +1,10 @@
+# Minimal CPU/memory/PVC for trial (namespace game-servers).
+# Requires secret harbor-registry-secret in that namespace.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: game-servers
+resources:
+  - ../../base
+patches:
+  - path: deployment-patch.yaml
+  - path: pvc-patch.yaml
