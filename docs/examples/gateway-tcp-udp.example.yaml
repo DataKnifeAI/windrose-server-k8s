@@ -8,6 +8,11 @@ metadata:
   namespace: game-servers
 spec:
   gatewayClassName: envoy
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: windrose-kubevip
   addresses:
     - type: IPAddress
       value: EXTERNAL_VIP

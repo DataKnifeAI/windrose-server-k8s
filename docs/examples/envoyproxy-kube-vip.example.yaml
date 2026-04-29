@@ -1,0 +1,16 @@
+# Reference: EnvoyProxy so kube-vip binds Gateway VIP on the node (see docs/KUBERNETES.md).
+# Same namespace as Gateway; LOAD_BALANCER_IP must match Gateway.spec.addresses.
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: windrose-kubevip
+  namespace: game-servers
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        type: LoadBalancer
+        loadBalancerIP: LOAD_BALANCER_IP
+        externalTrafficPolicy: Cluster

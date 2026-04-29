@@ -9,6 +9,13 @@ spec:
         - name: harbor-registry-secret
       containers:
         - name: windrose
+          # Envoy TCPRoute connects to pod:7777 TCP; invite-only mode often has no TCP listener
+          # there → Connection refused in Envoy logs. Direct connection opens the Unreal path.
+          env:
+            - name: USE_DIRECT_CONNECTION
+              value: "true"
+            - name: DIRECT_CONNECTION_PROXY_ADDRESS
+              value: "0.0.0.0"
           resources:
             requests:
               cpu: "250m"
