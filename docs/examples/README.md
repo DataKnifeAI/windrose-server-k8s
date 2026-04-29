@@ -6,4 +6,4 @@
 | `envoyproxy-kube-vip.example.yaml` | **EnvoyProxy** for **kube-vip** (`loadBalancerIP` + `externalTrafficPolicy: Cluster`). Replace `LOAD_BALANCER_IP`; must match `Gateway.spec.addresses`. |
 | `gateway-tcp-udp.example.yaml` | **Gateway** (with **`infrastructure.parametersRef`**) + **TCPRoute** / **UDPRoute** for **7777** TCP+UDP and **8780** TCP (Windrose+). Use a **dedicated VIP** if another game already uses TCP 7777 on the same Gateway. |
 
-Apply the app with **`kubectl apply -k deploy/`**. These snippets are for **platform** integration (Envoy Gateway, kube-vip). Canonical manifests for DataKnife: **`https://github.com/DataKnifeAI/gitops-tools`**.
+Apply **`deploy/`** for the app. Envoy exposure: **`kubectl apply -k deploy/envoy/`** (see **`../deploy/envoy/`**). **`docs/examples/`** here uses placeholders for forks.

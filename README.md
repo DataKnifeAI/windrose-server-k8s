@@ -90,7 +90,7 @@ DepotDownloader runs as the **`steam`** user so new downloads on the PVC are not
 
 The Kubernetes example in `deploy/deployment.yaml` uses **`imagePullPolicy: Always`** so a pinned tag still pulls the **latest digest** Harbor has for that tag after CI pushes.
 
-For **Envoy + kube-vip**, **ClusterIP** vs LoadBalancer, player **DNS/VIP** ports, and **`docs/examples/`** reference manifests, see **[docs/KUBERNETES.md](docs/KUBERNETES.md)**.
+For **Envoy + kube-vip**, **ClusterIP** vs LoadBalancer, player **DNS/VIP** ports, **`deploy/envoy/`** (apply separately), and **`docs/examples/`**, see **[docs/KUBERNETES.md](docs/KUBERNETES.md)**.
 
 ## UE4SS (optional)
 

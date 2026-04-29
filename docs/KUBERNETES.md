@@ -37,20 +37,23 @@ The primary **`windrose-server`** `Service` is **`ClusterIP`**. Player-facing **
 | **Direct connection** | Hostname or VIP + **7777 TCP/UDP** when `USE_DIRECT_CONNECTION=true`. |
 | **Windrose+ dashboard** | **8780 TCP** on the same VIP/hostname if Windrose+ is enabled. |
 
-Example DNS (DataKnife): **`windrose.dataknife.net`** → Envoy VIP (e.g. `192.168.14.186`). See **`DataKnifeAI/gitops-tools`** `docs/GAME_SERVERS_ENVOY.md` and `game-servers-exposure/overlays/prd-apps/`.
+Example DNS (DataKnife): **`windrose.dataknife.net`** → Envoy VIP (e.g. `192.168.14.186`).
+
+## Envoy Gateway manifests (`deploy/envoy/`)
+
+Apply **after** the game workload when using Envoy Gateway + kube-vip:
+
+```bash
+kubectl apply -k deploy/envoy/
+```
+
+VIP and namespace are in **`deploy/envoy/kustomization.yaml`**, **`envoyproxy.yaml`**, and **`gateway.yaml`**.
 
 ## kube-vip: use EnvoyProxy + `loadBalancerIP` (TCP+UDP Gateways)
 
-If Envoy Gateway only sets **`spec.externalIPs`** for the Envoy **`Service`**, **kube-vip** may **not** bind the VIP on the node (**no `status.loadBalancer.ingress`**). Add a namespaced **`EnvoyProxy`** and reference it from **`Gateway.spec.infrastructure.parametersRef`**, with **`envoyService.loadBalancerIP`** matching **`Gateway.spec.addresses`** and **`externalTrafficPolicy: Cluster`** when Envoy runs on workers and the VIP is on control-plane nodes. See **`docs/examples/envoyproxy-kube-vip.example.yaml`** and **`docs/examples/gateway-tcp-udp.example.yaml`**.
-
-## This repo vs gitops-tools
-
-- **`deploy/`** here: app only (ClusterIP, workloads).
-- **`docs/examples/`** here: **reference** YAML with placeholders for any cluster.
-- **`gitops-tools` `game-servers-exposure/`**: DataKnife **Fleet** apply set (fixed VIPs, names, overlay path).
-
-Avoid duplicating production manifests in this repo; keep **gitops-tools** as the single apply source for prd-apps, and update **examples** here when the integration pattern changes.
+If Envoy Gateway only sets **`spec.externalIPs`** for the Envoy **`Service`**, **kube-vip** may **not** bind the VIP on the node (**no `status.loadBalancer.ingress`**). Add a namespaced **`EnvoyProxy`** and reference it from **`Gateway.spec.infrastructure.parametersRef`**, with **`envoyService.loadBalancerIP`** matching **`Gateway.spec.addresses`** and **`externalTrafficPolicy: Cluster`** when Envoy runs on workers and the VIP is on control-plane nodes. See **`docs/examples/`** (placeholders) or **`deploy/envoy/`** (concrete VIPs).
 
 ## Examples in this repo
 
-**`docs/examples/`** holds reference YAML (**EnvoyProxy**, Envoy backend `Service`, `Gateway` + `TCPRoute`/`UDPRoute`). Production bundle for our cluster is maintained in **gitops-tools**.
+- **`deploy/envoy/`** — apply-ready Envoy + kube-vip bundle.
+- **`docs/examples/`** — reference YAML with placeholders.
