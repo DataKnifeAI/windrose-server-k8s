@@ -19,8 +19,27 @@ chown_steam_best_effort /home/steam/.wine
 
 cat /branding
 
+# If a previous run created .DepotDownloader as root, steam cannot write depot.config (NFS / root_squash).
+prepare_depotdownloader_cache() {
+    local dd="/home/steam/server-files/.DepotDownloader"
+    [ -e "$dd" ] || return 0
+    if command -v runuser >/dev/null 2>&1; then
+        if runuser -u steam -- test -w "$dd" 2>/dev/null; then
+            return 0
+        fi
+    elif su - steam -s /bin/sh -c "test -w '$dd'" 2>/dev/null; then
+        return 0
+    fi
+    LogWarn "Removing unreadable $dd (e.g. root-owned) so DepotDownloader can recreate it as steam"
+    rm -rf "$dd"
+}
+
 if [ "${UPDATE_ON_START:-true}" = "true" ]; then
-    install
+    prepare_depotdownloader_cache
+    if ! install; then
+        LogError "Server install failed — fix PVC permissions or remove stale .DepotDownloader, then restart"
+        exit 1
+    fi
 else
     LogWarn "UPDATE_ON_START is set to false, skipping server update"
 fi

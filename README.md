@@ -86,6 +86,8 @@ DepotDownloader runs as the **`steam`** user so new downloads on the PVC are not
 3. **Export maps all clients to one UID**: no `chown` will ever “stick”; set **`PUID`/`PGID`** to that UID/GID so `steam` matches what the filer assigns.
 4. **Harmless noise**: if warnings appear once and the server reaches **Starting server install** / running Wine, the install path is fine; focus on failures like missing `ServerDescription.json`.
 
+5. **Mixed root-owned + steam-owned trees** (common after upgrading from an older image): DepotDownloader may fail on paths like `.DepotDownloader/depot.config` or `steamclient.so`. **Scale the deployment to 0**, then delete the contents of the PVC mount (or only `.DepotDownloader`, `linux64`, `R5`, and root-owned Steam stubs) with a short **busybox Job**, then scale back up so the server reinstalls cleanly as `steam`.
+
 The Kubernetes example in `deploy/deployment.yaml` uses **`imagePullPolicy: Always`** so a pinned tag still pulls the **latest digest** Harbor has for that tag after CI pushes.
 
 For **Envoy + kube-vip**, **ClusterIP** vs LoadBalancer, player **DNS/VIP** ports, and **`docs/examples/`** reference manifests, see **[docs/KUBERNETES.md](docs/KUBERNETES.md)**.
