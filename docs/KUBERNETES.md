@@ -65,3 +65,21 @@ If Envoy Gateway only sets **`spec.externalIPs`** for the Envoy **`Service`**, *
 
 - **`deploy/envoy/`** — apply-ready Envoy + kube-vip bundle.
 - **`docs/examples/`** — reference YAML with placeholders.
+
+## Verification and troubleshooting (Envoy + logs)
+
+**Confirm the game is listening (Windrose + direct connection)**  
+After enabling **`USE_DIRECT_CONNECTION=true`** (and **`DIRECT_CONNECTION_PROXY_ADDRESS=0.0.0.0`** for Envoy TCP), **`R5.log`** should show direct mode and a bind on all interfaces, for example:
+
+- `SaveServerDescription` / persisted JSON with **`UseDirectConnection": true`**, **`DirectConnectionServerPort": 7777`**
+- `CreateDirectNetServer` — **Start server for Direct connection. Port 7777**
+- **`gRPC server started. ServerAddress 0.0.0.0:7777`** (game-facing gRPC on the port Envoy uses for TCP, not loopback-only)
+- **`LogNet: Created socket for bind address: 0.0.0.0:7777`** and **`IpNetDriver listening on port 7777`**
+
+A **lobby → map** transition may **shut down** one `GameNetDriver` and **start** another; both should show listen on **7777** if the stack is healthy.
+
+**Envoy shows `UF,URX` / `delayed_connect_error:_Connection_refused` to the pod on :7777**  
+Usually means **nothing accepted TCP on 7777** at that time — often **`USE_DIRECT_CONNECTION=false`** (invite-only) while **`TCPRoute`** still probes TCP. Fix: enable direct connection for L4 VIP exposure, or stop sending TCP to 7777 from the proxy.
+
+**`kubectl logs` / `kubectl exec` returns `502` to kubelet `:10250`**  
+The API server cannot reach the **node kubelet** (e.g. Rancher proxy → worker). **Pod may still be Running**; use another node, **SSH + `crictl logs`**, or repair kubelet on that worker — then tail **`kubectl logs`** or **`R5.log`** as above.
