@@ -1,5 +1,8 @@
 # Envoy Gateway + kube-vip (apply separately from deploy/).
 #   kubectl apply -k deploy/envoy/
+#
+# TCP :7777 requires the game to accept TCP on 7777 (typically USE_DIRECT_CONNECTION=true;
+# see docs/KUBERNETES.md). Invite-only often yields Connection refused on TCPRoute.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: game-servers
